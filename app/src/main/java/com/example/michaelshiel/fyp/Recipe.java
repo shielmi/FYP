@@ -62,9 +62,7 @@ public class Recipe {
     public String getProtein() {
         return protein;
     }
-    public String getCarbs() {
-        return carbs;
-    }
+    public String getCarbs() {return carbs;}
     public String getFat() {return fat;}
     public List getIngredients() { return this.ingredients;}
     public List getInstructions() { return this.instructions;}

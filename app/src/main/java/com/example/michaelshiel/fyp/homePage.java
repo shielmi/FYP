@@ -7,6 +7,11 @@ import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.google.firebase.database.DataSnapshot;
@@ -39,6 +44,8 @@ public class homePage extends AppCompatActivity {
     private DatabaseReference mUserReference;
     private DatabaseReference mGroceryListReference;
 
+    private ListView mRecipeListView;
+    private static final int RC_SIGN_IN = 1;
 
     TextView texx;
     String name;
@@ -65,7 +72,7 @@ public class homePage extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_page);
-        texx = (TextView) findViewById(R.id.tex1);
+       // texx = (TextView) findViewById(R.id.tex1);
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mSnackDatabaseReference = mFirebaseDatabase.getReference().child("snacks");
         mBreakfastDatabaseReference = mFirebaseDatabase.getReference().child("breakfast");
@@ -76,7 +83,8 @@ public class homePage extends AppCompatActivity {
         mAldiReference = mFirebaseDatabase.getReference().child("aldiPrices");
         mUserReference = mFirebaseDatabase.getReference().child("user");
         mGroceryListReference = mFirebaseDatabase.getReference().child("groceryList");
-        new doit().execute();
+       // new doit().execute();
+        mRecipeListView = (ListView) findViewById(R.id.recipeListView);
 
 
     }
@@ -87,12 +95,12 @@ public class homePage extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... voids) {
             try {
-                String url = "https://shop.supervalu.ie/shopping/meat-poultry-steaks-chops/c-150300405";
+                String url = "https://www.muscleandstrength.com/recipes/mini-chocolate-coconut-protein-cookies";
                 Document document = Jsoup.connect(url).get();
 
-                //getRecipe(document, url);
+                getRecipe(document, url);
                 //TescoPrices(document, url);
-                SupervaluPrices(document, url);
+                //SupervaluPrices(document, url);
                 //AldiPrices(document, url);
 
             } catch (IOException e) {
@@ -104,9 +112,9 @@ public class homePage extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-//            Recipe theRecipe = new Recipe(name, mCalories, mPrepTime, mCookTime, mProtein, mCarbs, mFat, mMeasurement,
-//                    mIngredients, mInstructions, mSurvingSuggestion, mWriter, mUrl, mSnackDatabaseReference);
-//            mSnackDatabaseReference.push().setValue(theRecipe);
+            Recipe theRecipe = new Recipe(name, mCalories, mPrepTime, mCookTime, mProtein, mCarbs, mFat, mMeasurement,
+                    mIngredients, mInstructions, mSurvingSuggestion, mWriter, mUrl, mSnackDatabaseReference);
+            mSnackDatabaseReference.push().setValue(theRecipe);
 
           //  TescoPrice price = new TescoPrice(name,mAmount,mCurrency, mPrice);
           //  mTescoPricesReference.push().setValue(price);
@@ -173,73 +181,88 @@ public class homePage extends AppCompatActivity {
 //            }
 
             //When amounts were at the start
-//            Elements ingredients = document.getElementsByClass("recipe-check-list").first().getElementsByTag("li");
-//            for (Element el : ingredients) {
-//                List singleRecipe = new ArrayList<>();
-//                List<String> amounts = new ArrayList<>();
-//                Element recipe3 = el.select("[itemprop=recipeIngredient]").first();
-//                //System.out.println( recipe3.text());
-//                String test = recipe3.text();
-//                Scanner scan = new Scanner(test);
-//                //scan.useDelimiter(", ");
-//                int i=0;
-//                String rest = "";
-//                if(scan.hasNext() &&  i==0)
-//                {
-//                    String s = scan.next();
-//                    if (s.matches(".*\\d+.*"))
-//                    {
-//                        String st = extractNumber(s);
-//                        String temp = scan.next();
-//                        if(temp.equals("scoops")||temp.equals("ounces")||temp.equals("tbsp")||temp.equals("cups")
-//                                ||temp.equals("ounce")||temp.equals("tsps")||temp.equals("tsp"))
-//                        {
-//                            String amount = extractServing(temp);
-//                            amounts.add(st);
-//                            amounts.add(amount);
-//                        }
-//                        else{
-//                            rest = rest.concat(temp);
-//                            amounts.add(st);
-//                        }
-//
-//                    }
-//                }
-//
-//                while(scan.hasNext())
-//                {
-//                    String temp = scan.next();
-//                    if(rest.equals("")==false)
-//                    {
-//                        rest = rest.concat(" " + temp);
-//                    }
-//                    else
-//                    {
-//                        rest = rest.concat( temp);
-//                    }
-//
-//                }
-//                singleRecipe.add(rest);
-//                singleRecipe.add(amounts);
-//                mIngredients.add(singleRecipe);
-//            }
+            Elements ingredients = document.getElementsByClass("recipe-check-list").first().getElementsByTag("li");
+            for (Element el : ingredients) {
+                List singleRecipe = new ArrayList<>();
+                List<String> amounts = new ArrayList<>();
+                Element recipe3 = el.select("[itemprop=recipeIngredient]").first();
+                //System.out.println( recipe3.text());
+                String test = recipe3.text();
+                Scanner scan = new Scanner(test);
+                //scan.useDelimiter(", ");
+                int i=0;
+                String rest = "";
+                if(scan.hasNext() &&  i==0)
+                {
+                    String s = scan.next();
+                    if (s.matches(".*\\d+.*")|| s.contains("½")||s.contains("¼")||s.contains("⅓")||s.contains("¾"))
+                    {
+                        String st = extractNumber(s);
+                        String temp = scan.next();
+                        if(temp.equals("scoops")||temp.equals("scoop")||temp.equals("ounces")||temp.equals("tbsp")||temp.equals("cups")||
+                                temp.equals("cup")||temp.equals("ounce")||temp.equals("tsps")||temp.equals("tsp")||temp.equals("oz")
+                                ||temp.equals("tbs")||temp.equals("tablespoon")||temp.equals("grams")||temp.equals("tbsp.")
+                                ||temp.equals("slices")||temp.equals("lbs")||temp.equals("packet")||temp.equals("Cans")
+                                ||temp.equals("lb")||temp.equals("batch")||temp.equals("bag")||temp.equals("tsp.")||temp.equals("pinch"))
+                        {
+                            String amount = extractServing(temp);
+                            amounts.add(st);
+                            amounts.add(amount);
+                        }
+                        else{
+                            rest = rest.concat(temp);
+                            amounts.add(st);
+                        }
 
-            //Unordered List
-            Elements instructions = document.select("[itemprop=recipeInstructions]").first().getElementsByTag("p");
-            for (Element el : instructions)
-            {
-                Element recipe4 = el.getElementsByTag("p").first();
-                mInstructions.add(recipe4.text());
+                    }
+                    else
+                    {
+                        rest = rest.concat(s);
+                    }
+                }
+
+                while(scan.hasNext())
+                {
+                    String temp = scan.next();
+                    if(rest.equals("")==false)
+                    {
+                        rest = rest.concat(" " + temp);
+                    }
+                    else if(temp.equals("of")==false)
+                    {
+                        rest = rest.concat( temp);
+                    }
+
+                }
+                singleRecipe.add(rest);
+                singleRecipe.add(amounts);
+                mIngredients.add(singleRecipe);
             }
 
-            //Ordered List
-//            Elements instructions = document.getElementsByTag("ol").first().getElementsByTag("li");
-//            for (Element el : instructions) {
-//
+//            //Bullet Points
+//            Elements instructions = document.select("[itemprop=recipeInstructions]").first().getElementsByTag("li");
+//            for (Element el : instructions)
+//            {
 //                Element recipe4 = el.getElementsByTag("li").first();
 //                mInstructions.add(recipe4.text());
-//
 //            }
+
+//            //Unordered List
+//            Elements instructions = document.select("[itemprop=recipeInstructions]").first().getElementsByTag("p");
+//            for (Element el : instructions)
+//            {
+//                Element recipe4 = el.getElementsByTag("p").first();
+//                mInstructions.add(recipe4.text());
+//            }
+
+            //Ordered List
+            Elements instructions = document.getElementsByTag("ol").first().getElementsByTag("li");
+            for (Element el : instructions) {
+
+                Element recipe4 = el.getElementsByTag("li").first();
+                mInstructions.add(recipe4.text());
+
+            }
 
             Elements yield = document.select("[itemprop=recipeYield]").first().getElementsByTag("p");
             mSurvingSuggestion = yield.text();
@@ -419,10 +442,63 @@ public class homePage extends AppCompatActivity {
             if(str == null || str.isEmpty()) return "";
 
             StringBuilder sb = new StringBuilder();
+            char lastChar = ' ';
             for(char c : str.toCharArray()){
-                if(Character.isDigit(c)||c=='.'){
+                if(Character.isDigit(c)||c=='.'||c=='/'||c=='-'){
                     sb.append(c);
-
+                    lastChar = c;
+                }
+                else if(c=='½'&&Character.isDigit(lastChar))
+                {
+                    sb.append(" ");
+                    sb.append("1");
+                    sb.append("/");
+                    sb.append("2");
+                }
+                else if(c=='½')
+                {
+                    sb.append("1");
+                    sb.append("/");
+                    sb.append("2");
+                }
+                else if(c=='¼'&&Character.isDigit(lastChar))
+                {
+                    sb.append(" ");
+                    sb.append("1");
+                    sb.append("/");
+                    sb.append("4");
+                }
+                else if(c=='¼')
+                {
+                    sb.append("1");
+                    sb.append("/");
+                    sb.append("4");
+                }
+                else if(c=='⅓'&&Character.isDigit(lastChar))
+                {
+                    sb.append(" ");
+                    sb.append("1");
+                    sb.append("/");
+                    sb.append("3");
+                }
+                else if(c=='⅓')
+                {
+                    sb.append("1");
+                    sb.append("/");
+                    sb.append("3");
+                }
+                else if(c=='¾'&&Character.isDigit(lastChar))
+                {
+                    sb.append(" ");
+                    sb.append("3");
+                    sb.append("/");
+                    sb.append("4");
+                }
+                else if(c=='¾')
+                {
+                    sb.append("3");
+                    sb.append("/");
+                    sb.append("4");
                 }
             }
 
