@@ -7,6 +7,7 @@ import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -18,6 +19,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
@@ -47,7 +49,6 @@ public class homePage extends AppCompatActivity {
     private ListView mRecipeListView;
     private static final int RC_SIGN_IN = 1;
 
-    TextView texx;
     String name;
     String mPrepTime;
     String mCookTime;
@@ -72,7 +73,6 @@ public class homePage extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_page);
-       // texx = (TextView) findViewById(R.id.tex1);
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mSnackDatabaseReference = mFirebaseDatabase.getReference().child("snacks");
         mBreakfastDatabaseReference = mFirebaseDatabase.getReference().child("breakfast");
@@ -86,7 +86,61 @@ public class homePage extends AppCompatActivity {
        // new doit().execute();
         mRecipeListView = (ListView) findViewById(R.id.recipeListView);
 
+//        ValueEventListener recipeListener = new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//                // Get Post object and use the values to update the UI
+//                Recipe recipe = dataSnapshot.getValue(Recipe.class);
+//                // ...
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//                // Getting Post failed, log a message
+//                Log.w("TAG", "loadPost:onCancelled", databaseError.toException());
+//                // ...
+//            }
+//        };
+//        mBreakfastDatabaseReference.addValueEventListener(recipeListener);
+//       // mRecipeListView.setAdapter(adapter);
+        mBreakfastDatabaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                showData(dataSnapshot);
+            }
 
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void showData(DataSnapshot dataSnapshot) {
+        for(DataSnapshot ds: dataSnapshot.getChildren())
+        {
+
+            Recipe recipe1 = new Recipe();
+            recipe1.setName(ds.getValue(Recipe.class).getName());
+            recipe1.setCalories(ds.getValue(Recipe.class).getCalories());
+            recipe1.setPrepTime(ds.getValue(Recipe.class).getPrepTime());
+            recipe1.setCookTime(ds.getValue(Recipe.class).getCookTime());
+            recipe1.setProtein(ds.getValue(Recipe.class).getProtein());
+            recipe1.setCarbs(ds.getValue(Recipe.class).getCarbs());
+            recipe1.setFat(ds.getValue(Recipe.class).getFat());
+            recipe1.setMeasurement(ds.getValue(Recipe.class).getMeasurement());
+            recipe1.setIngredients(ds.getValue(Recipe.class).getIngredients());
+            recipe1.setInstructions(ds.getValue(Recipe.class).getInstructions());
+            recipe1.setSurvingSuggestion(ds.getValue(Recipe.class).getSurvingSuggestion());
+            recipe1.setWriter(ds.getValue(Recipe.class).getWriter());
+            recipe1.setUrl(ds.getValue(Recipe.class).getUrl());
+
+            ArrayList array = new ArrayList<>();
+            array.add(recipe1.getName());
+            array.add(recipe1.getCalories());
+            ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1,array);
+            mRecipeListView.setAdapter(adapter);
+        }
     }
 
 
